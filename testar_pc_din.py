@@ -37,6 +37,8 @@ def plot_confusion_matrix(cm, classes,
 
     plt.savefig("saida/confusion_matrix_fold_"+str(fold)+".png")
 
+    plt.close()
+
 
 def cnn_model():
     model = tf.keras.models.Sequential([
