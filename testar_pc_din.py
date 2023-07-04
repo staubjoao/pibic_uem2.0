@@ -6,11 +6,36 @@ from sklearn.model_selection import KFold
 import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
+import itertools
 
 
 input_shape = (256, 256, 3)
 classes = ["beach", "bus", "cafe_restaurant", "car", "city_center", "forest_path", "grocery_store",
            "home", "library", "metro_station", "office", "park", "residential_area", "train", "tram"]
+
+
+def plot_confusion_matrix(cm, classes,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues, fold=1):
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    fmt = 'd'
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, format(cm[i, j], fmt),
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('Classe verdadeira')
+    plt.xlabel('Classe prevista')
+
+    plt.savefig("saida/confusion_matrix_fold_"+str(fold)+".png")
 
 
 def cnn_model():
@@ -75,7 +100,7 @@ scores_array = []
 confusion_matrices = []
 
 k_fold = 5
-epochs = 20
+epochs = 2  # 20
 batch_size = 32
 
 best_model, best_acc = None, 0.0
@@ -138,19 +163,22 @@ for train, test in kfold.split(images, labels):
     confusion_matrix_fold = confusion_matrix(
         y_pred, current_fold_predictions)
 
-    plt.figure(figsize=(8, 6))
-    plt.imshow(confusion_matrix_fold,
-               interpolation='nearest', cmap=plt.cm.Blues)
-    plt.title(f'Matriz de Confusão - Fold {fold_no}')
-    plt.colorbar()
-    tick_marks = np.arange(len(classes))
-    plt.xticks(tick_marks, classes, rotation=45)
-    plt.yticks(tick_marks, classes)
-    plt.xlabel('Rótulo Predito')
-    plt.ylabel('Rótulo Verdadeiro')
+    # plt.figure(figsize=(8, 6))
+    # plt.imshow(confusion_matrix_fold,
+    #            interpolation='nearest', cmap=plt.cm.Blues)
+    # plt.title(f'Matriz de Confusão - Fold {fold_no}')
+    # plt.colorbar()
+    # tick_marks = np.arange(len(classes))
+    # plt.xticks(tick_marks, classes, rotation=45)
+    # plt.yticks(tick_marks, classes)
+    # plt.xlabel('Rótulo Predito')
+    # plt.ylabel('Rótulo Verdadeiro')
 
-    plt.savefig("saida/confusion_matrix_fold_"+str(fold_no)+".png")
-    plt.close()
+    # plt.savefig("saida/confusion_matrix_fold_"+str(fold_no)+".png")
+    # plt.close()
+
+    plot_confusion_matrix(confusion_matrix_fold, classes=[
+                          i for i in range(1, 16)], title='Matriz de confusão fold '+str(fold_no), fold=fold_no)
 
     fold_no += 1
 
