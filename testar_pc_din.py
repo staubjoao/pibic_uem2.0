@@ -76,7 +76,7 @@ confusion_matrices = []
 
 k_fold = 5
 epochs = 2
-batch_size = 8
+batch_size = 1
 
 kfold = KFold(n_splits=k_fold, shuffle=True)
 
