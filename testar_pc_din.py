@@ -102,7 +102,7 @@ scores_array = []
 confusion_matrices = []
 
 k_fold = 5
-epochs = 2  # 20
+epochs = 50
 batch_size = 32
 
 best_model, best_acc = None, 0.0
