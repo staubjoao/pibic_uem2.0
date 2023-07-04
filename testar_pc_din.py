@@ -78,6 +78,8 @@ k_fold = 5
 epochs = 2
 batch_size = 1
 
+best_model, best_acc = None, 0.0
+
 kfold = KFold(n_splits=k_fold, shuffle=True)
 
 fold_no = 1
@@ -120,6 +122,10 @@ for train, test in kfold.split(images, labels):
     histories.append(history.history)
 
     scores = model.evaluate(x_test, y_test, verbose=0)
+
+    if scores[1] > best_acc:
+        best_acc = scores[1]
+        best_model = model
     scores_array.append(scores)
     print(
         f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
@@ -212,3 +218,10 @@ plt.ylabel('Acurácia')
 plt.tight_layout()
 
 plt.savefig("saida/boxplot.png")
+
+model_json = model.to_json()
+with open("saida/model.json", "w") as json_file:
+    json_file.write(model_json)
+
+model.save_weights("saida/model.h5")
+print("Saved model to disk")
