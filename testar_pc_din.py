@@ -102,7 +102,7 @@ scores_array = []
 confusion_matrices = []
 
 k_fold = 5
-epochs = 35
+epochs = 50
 batch_size = 32
 overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
