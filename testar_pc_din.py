@@ -102,8 +102,9 @@ scores_array = []
 confusion_matrices = []
 
 k_fold = 5
-epochs = 50
+epochs = 2
 batch_size = 32
+overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
 best_model, best_acc = None, 0.0
 
@@ -165,25 +166,15 @@ for train, test in kfold.split(images, labels):
     confusion_matrix_fold = confusion_matrix(
         y_pred, current_fold_predictions)
 
-    # plt.figure(figsize=(8, 6))
-    # plt.imshow(confusion_matrix_fold,
-    #            interpolation='nearest', cmap=plt.cm.Blues)
-    # plt.title(f'Matriz de Confusão - Fold {fold_no}')
-    # plt.colorbar()
-    # tick_marks = np.arange(len(classes))
-    # plt.xticks(tick_marks, classes, rotation=45)
-    # plt.yticks(tick_marks, classes)
-    # plt.xlabel('Rótulo Predito')
-    # plt.ylabel('Rótulo Verdadeiro')
-
-    # plt.savefig("saida/confusion_matrix_fold_"+str(fold_no)+".png")
-    # plt.close()
-
+    overall_confusion_matrix += confusion_matrix_fold
     plot_confusion_matrix(confusion_matrix_fold, classes=[
                           i for i in range(1, 16)], title='Matriz de confusão fold '+str(fold_no), fold=fold_no)
 
     fold_no += 1
 
+
+plot_confusion_matrix(overall_confusion_matrix, classes=[
+    i for i in range(1, 16)], title='Matriz de geral', fold=fold_no)
 
 # == Provide average scores ==
 print('------------------------------------------------------------------------')
