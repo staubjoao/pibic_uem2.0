@@ -16,7 +16,7 @@ classes = ["beach", "bus", "cafe_restaurant", "car", "city_center", "forest_path
 
 def plot_confusion_matrix(cm, classes,
                           title='Confusion matrix',
-                          cmap=plt.cm.Blues, fold=1):
+                          cmap=plt.cm.Blues, fold=0):
     plt.imshow(cm, interpolation='nearest', cmap=cmap)
     plt.title(title)
     plt.colorbar()
@@ -28,8 +28,8 @@ def plot_confusion_matrix(cm, classes,
     thresh = cm.max() / 2.
     for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
         plt.text(j, i, format(cm[i, j], '.0f'),
-         horizontalalignment="center",
-         color="white" if cm[i, j] > thresh else "black")
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
 
     plt.tight_layout()
     plt.ylabel('Classe verdadeira')
@@ -102,7 +102,7 @@ scores_array = []
 confusion_matrices = []
 
 k_fold = 5
-epochs = 2
+epochs = 35
 batch_size = 32
 overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
@@ -178,7 +178,7 @@ for i, class_name in enumerate(classes):
     print(f'Classe {class_name}: Total real = {true_count}')
 
 plot_confusion_matrix(overall_confusion_matrix, classes=[
-    i for i in range(1, 16)], title='Matriz de geral', fold=fold_no)
+    i for i in range(1, 16)], title='Matriz geral')
 
 # == Provide average scores ==
 print('------------------------------------------------------------------------')
