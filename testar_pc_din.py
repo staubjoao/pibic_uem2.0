@@ -173,6 +173,10 @@ for train, test in kfold.split(images, labels):
     fold_no += 1
 
 
+for i, class_name in enumerate(classes):
+    true_count = np.sum(overall_confusion_matrix[i, :])
+    print(f'Classe {class_name}: Total real = {true_count}')
+
 plot_confusion_matrix(overall_confusion_matrix, classes=[
     i for i in range(1, 16)], title='Matriz de geral', fold=fold_no)
 
