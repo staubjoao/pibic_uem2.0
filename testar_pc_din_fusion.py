@@ -244,6 +244,7 @@ for train, test in kfold.split(images, labels):
     fusion_predictions = []
     loss_values = []
     for svm_pred, cnn_pred, true_label in zip(svm_predictions, cnn_predictions, y_pred):
+        print(svm_pred, cnn_pred)
         votes = [int(svm_pred[0]), int(cnn_pred[0])]
         class_counts = np.bincount(np.ravel(votes))
         majority_vote = np.argmax(class_counts)
