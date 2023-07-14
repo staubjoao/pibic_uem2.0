@@ -119,7 +119,7 @@ for i in range(1170):
         path_img = path_total + str(l) + '.png'
         img = cv2.imread(path_img)
         img = cv2.resize(img, (256, 256))
-        aux.append(0)
+        aux.append(img)
     images.append(aux)
     labels.append(k)
     j += 1
@@ -148,7 +148,7 @@ confusion_matrices = []
 
 fusion_methods = ['average', 'maximum', 'voting']
 k_fold = 5
-epochs = 10
+epochs = 2
 batch_size = 32
 overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
