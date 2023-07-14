@@ -294,32 +294,35 @@ for train, test in kfold.split(images, labels):
     loss_per_fold.append(scores[0])
 
     # cnn_predictions = np.argmax(cnn_predictions, axis=1)
-    fused_predictions = np.argmax(fused_predictions, axis=1)
+    # fused_predictions = np.argmax(fused_predictions, axis=1)
+
+    # confusion_matrix_fold = confusion_matrix(
+    #     y_pred, fused_predictions)
 
     confusion_matrix_fold = confusion_matrix(
-        y_pred, fused_predictions)
+        y_pred, fusion_predictions)
 
     overall_confusion_matrix += confusion_matrix_fold
     plot_confusion_matrix(confusion_matrix_fold, classes=[
         i for i in range(1, 16)], title='Matriz de confusão fold '+str(fold_no)+' fusão CNN - SVM', fold=fold_no)
 
-    plt.figure(figsize=(15, 5))
+    # plt.figure(figsize=(15, 5))
 
-    plt_loss = plt.subplot(121)
-    plt.plot(loss_values, label=f'fold {fold_no}')
-    plt.title("Perda")
-    plt.ylabel("Perda")
-    plt.xlabel("Época")
-    plt.legend()
+    # plt_loss = plt.subplot(121)
+    # plt.plot(loss_values, label=f'fold {fold_no}')
+    # plt.title("Perda")
+    # plt.ylabel("Perda")
+    # plt.xlabel("Época")
+    # plt.legend()
 
-    plt_accuracy = plt.subplot(122)
-    plt.plot(accuracy_fusion, label=f'fold {fold_no}')
-    plt.title("Acurácia")
-    plt.ylabel("Acurácia")
-    plt.xlabel("Época")
-    plt.legend()
+    # plt_accuracy = plt.subplot(122)
+    # plt.plot(accuracy_fusion, label=f'fold {fold_no}')
+    # plt.title("Acurácia")
+    # plt.ylabel("Acurácia")
+    # plt.xlabel("Época")
+    # plt.legend()
 
-    plt.savefig(f"fusion/cnn_training_results_fold_{fold_no}.png")
+    # plt.savefig(f"fusion/cnn_training_results_fold_{fold_no}.png")
 
     fold_no += 1
 
