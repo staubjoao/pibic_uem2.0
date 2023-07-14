@@ -3,6 +3,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import confusion_matrix
 from keras.utils import to_categorical
+from keras.losses import categorical_crossentropy
+from sklearn.metrics import accuracy_score
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.svm import SVC
@@ -210,54 +212,74 @@ for train, test in kfold.split(images, labels):
     svm_model = SVC(C=100, kernel='poly', gamma='scale')
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict(x_test_svm)
-    print("SVM: ", svm_predictions)
+    # print("SVM: ", svm_predictions)
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    print("CNN: ", svm_predictions)
+    # print("CNN: ", svm_predictions)
 
-    results = {}
+    # results = {}
 
-    # fusion
-    for fusion_method in fusion_methods:
-        if fusion_method == 'average':
-            fused_predictions = average_fusion(
-                [cnn_predictions, svm_predictions])
-        elif fusion_method == 'maximum':
-            fused_predictions = maximum_fusion(
-                [cnn_predictions, svm_predictions])
-        elif fusion_method == 'voting':
-            fused_predictions = voting_fusion(
-                [cnn_predictions, svm_predictions])
-        else:
-            raise ValueError(
-                f'Fusion method {fusion_method} is not supported.')
-        accuracy = calculate_accuracy(y_pred, fused_predictions)
-        loss = calculate_loss(y_pred, fused_predictions)
+    # # fusion
+    # for fusion_method in fusion_methods:
+    #     if fusion_method == 'average':
+    #         fused_predictions = average_fusion(
+    #             [cnn_predictions, svm_predictions])
+    #     elif fusion_method == 'maximum':
+    #         fused_predictions = maximum_fusion(
+    #             [cnn_predictions, svm_predictions])
+    #     elif fusion_method == 'voting':
+    #         fused_predictions = voting_fusion(
+    #             [cnn_predictions, svm_predictions])
+    #     else:
+    #         raise ValueError(
+    #             f'Fusion method {fusion_method} is not supported.')
+    #     accuracy = calculate_accuracy(y_pred, fused_predictions)
+    #     loss = calculate_loss(y_pred, fused_predictions)
 
-        results[fusion_method] = {'accuracy': accuracy, 'loss': loss}
+    #     results[fusion_method] = {'accuracy': accuracy, 'loss': loss}
 
-    best_fusion_method = max(results, key=lambda x: results[x]['accuracy'])
-    best_accuracy = results[best_fusion_method]['accuracy']
+    fusion_predictions = []
+    loss_values = []
+    for svm_pred, cnn_pred, true_label in zip(svm_predictions, cnn_predictions, y_pred):
+        votes = [svm_pred, cnn_pred]
+        class_counts = np.bincount(votes)
+        majority_vote = np.argmax(class_counts)
+        fusion_predictions.append(majority_vote)
 
-    acc_per_fold_fusion.append(best_accuracy)
+        # Cálculo da perda para a previsão da fusão
+        true_label_one_hot = np.zeros_like(class_counts)
+        true_label_one_hot[true_label] = 1
+        loss = categorical_crossentropy([true_label_one_hot], [class_counts])
+        loss_values.append(loss)
 
-    best_fusion_methods_with_best_accuracy = [
-        method for method in results if results[method]['accuracy'] == best_accuracy]
-    best_fusion_method_with_best_loss = min(
-        best_fusion_methods_with_best_accuracy, key=lambda x: results[x]['loss'])
+    # Avaliação do desempenho da fusão das previsões
+    accuracy_fusion = accuracy_score(y_pred, fusion_predictions)
+    average_loss = np.mean(loss_values)
+    print("Acurácia da fusão das previsões: {:.2f}%".format(accuracy * 100))
+    print("Perda média da fusão das previsões: {:.4f}".format(average_loss))
 
-    print('Resultados da fusão:')
-    for fusion_method, metrics in results.items():
-        print(
-            f'{fusion_method}: Accuracy = {metrics["accuracy"]}, Loss = {metrics["loss"]}')
+    # best_fusion_method = max(results, key=lambda x: results[x]['accuracy'])
+    # best_accuracy = results[best_fusion_method]['accuracy']
 
-    print(
-        f'O melhor método de fusão com base na melhor acurácia é {best_fusion_method} (Accuracy = {best_accuracy})')
-    print(
-        f'O melhor método de fusão com base na melhor acurácia e menor perda é {best_fusion_method_with_best_loss} (Accuracy = {best_accuracy}, Loss = {results[best_fusion_method_with_best_loss]["loss"]})')
+    # acc_per_fold_fusion.append(best_accuracy)
+
+    # best_fusion_methods_with_best_accuracy = [
+    #     method for method in results if results[method]['accuracy'] == best_accuracy]
+    # best_fusion_method_with_best_loss = min(
+    #     best_fusion_methods_with_best_accuracy, key=lambda x: results[x]['loss'])
+
+    # print('Resultados da fusão:')
+    # for fusion_method, metrics in results.items():
+    #     print(
+    #         f'{fusion_method}: Accuracy = {metrics["accuracy"]}, Loss = {metrics["loss"]}')
+
+    # print(
+    #     f'O melhor método de fusão com base na melhor acurácia é {best_fusion_method} (Accuracy = {best_accuracy})')
+    # print(
+    #     f'O melhor método de fusão com base na melhor acurácia e menor perda é {best_fusion_method_with_best_loss} (Accuracy = {best_accuracy}, Loss = {results[best_fusion_method_with_best_loss]["loss"]})')
 
     if scores[1] > best_acc:
         best_acc = scores[1]
@@ -281,14 +303,14 @@ for train, test in kfold.split(images, labels):
     plt.figure(figsize=(15, 5))
 
     plt_loss = plt.subplot(121)
-    plt.plot(loss, label=f'fold {fold_no}')
+    plt.plot(loss_values, label=f'fold {fold_no}')
     plt.title("Perda")
     plt.ylabel("Perda")
     plt.xlabel("Época")
     plt.legend()
 
     plt_accuracy = plt.subplot(122)
-    plt.plot(accuracy, label=f'fold {fold_no}')
+    plt.plot(accuracy_fusion, label=f'fold {fold_no}')
     plt.title("Acurácia")
     plt.ylabel("Acurácia")
     plt.xlabel("Época")
