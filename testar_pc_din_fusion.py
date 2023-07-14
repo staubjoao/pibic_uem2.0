@@ -252,10 +252,10 @@ for train, test in kfold.split(images, labels):
         fusion_predictions.append(majority_vote)
 
         # Cálculo da perda para a previsão da fusão
-        true_label_one_hot = np.zeros_like(class_counts)
-        true_label_one_hot[true_label] = 1
-        loss = categorical_crossentropy([true_label_one_hot], [class_counts])
-        loss_values.append(loss)
+        # true_label_one_hot = np.zeros_like(class_counts)
+        # true_label_one_hot[true_label] = 1
+        # loss = categorical_crossentropy([true_label_one_hot], [class_counts])
+        # loss_values.append(loss)
 
     # Avaliação do desempenho da fusão das previsões
     accuracy_fusion = accuracy_score(y_pred, fusion_predictions)
