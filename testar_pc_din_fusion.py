@@ -354,26 +354,26 @@ print(f'> Loss: {np.mean(loss_per_fold)}')
 print('------------------------------------------------------------------------')
 
 
-loss = []
+# loss = []
 accuracy = []
 
 for i in range(k_fold):
-    aux_loss = histories[i]['loss']
+    # aux_loss = histories[i]['loss']
     aux_accuracy = histories[i]['accuracy']
 
-    loss.append(aux_loss)
+    # loss.append(aux_loss)
     accuracy.append(aux_accuracy)
 
 
 plt.figure(figsize=(15, 5))
 
-plt_loss = plt.subplot(121)
-for fold in range(len(loss)):
-    plt.plot(loss[fold], label=f'fold {fold+1}')
-plt.title("Perda")
-plt.ylabel("Perda")
-plt.xlabel("Época")
-plt.legend()
+# plt_loss = plt.subplot(121)
+# for fold in range(len(loss)):
+#     plt.plot(loss[fold], label=f'fold {fold+1}')
+# plt.title("Perda")
+# plt.ylabel("Perda")
+# plt.xlabel("Época")
+# plt.legend()
 
 plt_accuracy = plt.subplot(122)
 for fold in range(len(accuracy)):
@@ -388,11 +388,11 @@ plt.savefig("saida/graficos.png")
 
 plt.figure(figsize=(10, 5))
 
-plt.subplot(1, 2, 1)
-plt.boxplot(loss)
-plt.title('Validação Perda')
-plt.xlabel('fold')
-plt.ylabel('Perda')
+# plt.subplot(1, 2, 1)
+# plt.boxplot(loss)
+# plt.title('Validação Perda')
+# plt.xlabel('fold')
+# plt.ylabel('Perda')
 
 plt.subplot(1, 2, 2)
 plt.boxplot(accuracy)
