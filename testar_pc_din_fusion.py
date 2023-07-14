@@ -219,7 +219,7 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    print("CNN: ", svm_predictions.shape())
+    print("CNN: ", svm_predictions)
 
     results = {}
 
