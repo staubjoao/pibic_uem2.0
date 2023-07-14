@@ -259,9 +259,10 @@ for train, test in kfold.split(images, labels):
 
     # Avaliação do desempenho da fusão das previsões
     accuracy_fusion = accuracy_score(y_pred, fusion_predictions)
-    average_loss = np.mean(loss_values)
-    print("Acurácia da fusão das previsões: {:.2f}%".format(accuracy * 100))
-    print("Perda média da fusão das previsões: {:.4f}".format(average_loss))
+    print(accuracy_fusion)
+    # average_loss = np.mean(loss_values)
+    # print("Acurácia da fusão das previsões: {:.2f}%".format(accuracy * 100))
+    # print("Perda média da fusão das previsões: {:.4f}".format(average_loss))
 
     # best_fusion_method = max(results, key=lambda x: results[x]['accuracy'])
     # best_accuracy = results[best_fusion_method]['accuracy']
