@@ -160,6 +160,7 @@ best_model, best_acc = None, 0.0
 kfold = KFold(n_splits=k_fold, shuffle=True)
 
 fold_no = 1
+accuracy = []  # lista para armazenar as precisões de cada fold
 for train, test in kfold.split(images, labels):
     model = cnn_model()
 
@@ -214,11 +215,8 @@ for train, test in kfold.split(images, labels):
     svm_predictions = svm_model.predict(x_test_svm)
 
     # CNN
-    history = model.fit(x_train_cnn, y_train_cnn,
-                        batch_size=batch_size,
-                        epochs=epochs)
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
-    histories.append(history.history)
+    histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
 
     results = {}
@@ -268,7 +266,7 @@ for train, test in kfold.split(images, labels):
     scores_array.append(scores)
     print(
         f'Score for fold (CNN) {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
-    acc_per_fold.append(scores[1] * 100)
+    accuracy.append(scores[1] * 100)
     loss_per_fold.append(scores[0])
 
     # cnn_predictions = np.argmax(cnn_predictions, axis=1)
@@ -298,24 +296,6 @@ for train, test in kfold.split(images, labels):
     plt.legend()
 
     plt.savefig(f"fusion/cnn_training_results_fold_{fold_no}.png")
-
-    plt.figure(figsize=(10, 5))
-
-    plt.subplot(1, 2, 1)
-    plt.boxplot(loss_per_fold)
-    plt.title(f'Validação Perda - Fold {fold_no}')
-    plt.xlabel('fold')
-    plt.ylabel('Perda')
-
-    plt.subplot(1, 2, 2)
-    plt.boxplot(acc_per_fold)
-    plt.title(f'Validação Acurácia - Fold {fold_no}')
-    plt.xlabel('fold')
-    plt.ylabel('Acurácia')
-
-    plt.tight_layout()
-
-    plt.savefig(f"fusion/validation_results_fold_{fold_no}.png")
 
     fold_no += 1
 
