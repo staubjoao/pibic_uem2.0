@@ -13,7 +13,9 @@ import itertools
 
 
 def average_fusion(predictions):
-    return np.mean(predictions, axis=0)
+    fused_predictions = np.mean(predictions, axis=0)
+    fused_predictions = np.squeeze(fused_predictions)
+    return fused_predictions
 
 
 def maximum_fusion(predictions):
