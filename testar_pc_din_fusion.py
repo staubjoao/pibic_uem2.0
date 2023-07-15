@@ -212,13 +212,15 @@ for train, test in kfold.split(images, labels):
     svm_model = SVC(C=100, kernel='poly', gamma='scale')
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict(x_test_svm)
-    # print("SVM: ", svm_predictions)
+    print("SVM: ", svm_predictions)
+    print("len(SVM): ", len(svm_predictions))
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    # print("CNN: ", svm_predictions)
+    print("CNN: ", svm_predictions)
+    print("len(CNN): ", len(cnn_predictions))
 
     # results = {}
 
@@ -241,25 +243,6 @@ for train, test in kfold.split(images, labels):
 
     #     results[fusion_method] = {'accuracy': accuracy, 'loss': loss}
 
-    fusion_predictions = []
-    loss_values = []
-    for svm_pred, cnn_pred, true_label in zip(svm_predictions, cnn_predictions, y_pred):
-        if isinstance(cnn_pred, np.ndarray):
-            cnn_pred2 = np.max(cnn_pred)
-        votes = [int(svm_pred), int(cnn_pred2)]
-        class_counts = np.bincount(np.ravel(votes))
-        majority_vote = np.argmax(class_counts)
-        fusion_predictions.append(majority_vote)
-
-        # Cálculo da perda para a previsão da fusão
-        # true_label_one_hot = np.zeros_like(class_counts)
-        # true_label_one_hot[true_label] = 1
-        # loss = categorical_crossentropy([true_label_one_hot], [class_counts])
-        # loss_values.append(loss)
-
-    # Avaliação do desempenho da fusão das previsões
-    accuracy_fusion = accuracy_score(y_pred, fusion_predictions)
-    print(accuracy_fusion)
     # average_loss = np.mean(loss_values)
     # print("Acurácia da fusão das previsões: {:.2f}%".format(accuracy * 100))
     # print("Perda média da fusão das previsões: {:.4f}".format(average_loss))
@@ -299,12 +282,12 @@ for train, test in kfold.split(images, labels):
     # confusion_matrix_fold = confusion_matrix(
     #     y_pred, fused_predictions)
 
-    confusion_matrix_fold = confusion_matrix(
-        y_pred, fusion_predictions)
+    # confusion_matrix_fold = confusion_matrix(
+    #     y_pred, fusion_predictions)
 
-    overall_confusion_matrix += confusion_matrix_fold
-    plot_confusion_matrix(confusion_matrix_fold, classes=[
-        i for i in range(1, 16)], title='Matriz de confusão fold '+str(fold_no)+' fusão CNN - SVM', fold=fold_no)
+    # overall_confusion_matrix += confusion_matrix_fold
+    # plot_confusion_matrix(confusion_matrix_fold, classes=[
+    #     i for i in range(1, 16)], title='Matriz de confusão fold '+str(fold_no)+' fusão CNN - SVM', fold=fold_no)
 
     # plt.figure(figsize=(15, 5))
 
