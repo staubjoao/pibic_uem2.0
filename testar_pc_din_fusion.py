@@ -16,21 +16,21 @@ import itertools
 
 def fuse_predictions_voting(svm_predictions, cnn_predictions):
     fused_predictions = []
-    num_classes = 15
+    # Obtém o número de classes do vetor de previsões do CNN
+    num_classes = len(cnn_predictions[0])
+    print("num_classes: ", num_classes)
 
     for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
-        print("svm_pred: ", svm_pred)
-        print("cnn_pred: ", cnn_pred)
         # Contando os votos para cada classe
-        # Substitua num_classes pelo número real de classes
         votes = np.zeros(num_classes, dtype=int)
 
-        # Convertendo as previsões para inteiros
+        # Incrementando o voto do SVM
         svm_pred = int(svm_pred)
-        cnn_pred = int(cnn_pred)
-
         votes[svm_pred] += 1
-        votes[cnn_pred] += 1
+
+        # Incrementando os votos do CNN
+        max_class_index = np.argmax(cnn_pred)
+        votes[max_class_index] += 1
 
         # Obtendo a classe com mais votos
         fused_pred = np.argmax(votes)
