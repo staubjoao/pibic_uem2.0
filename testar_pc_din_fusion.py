@@ -231,21 +231,21 @@ for train, test in kfold.split(images, labels):
     svm_model = SVC(C=100, kernel='poly', gamma='scale')
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict(x_test_svm)
-    print("SVM: ", type(svm_predictions))
-    print("len(SVM): ", len(svm_predictions))
+    # print("SVM: ", type(svm_predictions))
+    # print("len(SVM): ", len(svm_predictions))
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    print("CNN: ", type(svm_predictions))
-    print("len(CNN): ", len(cnn_predictions))
+    # print("CNN: ", type(svm_predictions))
+    # print("len(CNN): ", len(cnn_predictions))
 
     fused_predictions_voting = fuse_predictions_voting(
         svm_predictions, cnn_predictions)
 
-    accuracy = calculate_accuracy(y_pred, fused_predictions_voting)
-    print("Acurácia da fusão por votação:", accuracy)
+    accuracy_fusion = calculate_accuracy(y_pred, fused_predictions_voting)
+    print("Acurácia da fusão por votação:", accuracy_fusion)
 
     # results = {}
 
