@@ -22,8 +22,13 @@ def fuse_predictions_voting(svm_predictions, cnn_predictions):
         # Contando os votos para cada classe
         # Substitua num_classes pelo número real de classes
         votes = np.zeros(num_classes, dtype=int)
-        votes[int(svm_pred)] += 1
-        votes[int(cnn_pred)] += 1
+
+        # Convertendo as previsões para inteiros
+        svm_pred = int(svm_pred)
+        cnn_pred = int(cnn_pred)
+
+        votes[svm_pred] += 1
+        votes[cnn_pred] += 1
 
         # Obtendo a classe com mais votos
         fused_pred = np.argmax(votes)
