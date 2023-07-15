@@ -14,21 +14,31 @@ import matplotlib.pyplot as plt
 import itertools
 
 
-def average_fusion(predictions):
-    return np.mean(predictions, axis=0)
+def fuse_predictions_voting(svm_predictions, cnn_predictions):
+    fused_predictions = []
+    for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
+        # Contando os votos para cada classe
+        # Substitua num_classes pelo número real de classes
+        votes = np.zeros(15)
+        votes[svm_pred] += 1
+        votes[cnn_pred] += 1
+
+        # Obtendo a classe com mais votos
+        fused_pred = np.argmax(votes)
+        fused_predictions.append(fused_pred)
+
+    return fused_predictions
 
 
-def maximum_fusion(predictions):
-    return np.max(predictions, axis=0)
+def calculate_accuracy(true_labels, fused_predictions):
+    correct_predictions = 0
+    total_predictions = len(true_labels)
 
+    for true_label, fused_pred in zip(true_labels, fused_predictions):
+        if true_label == fused_pred:
+            correct_predictions += 1
 
-def voting_fusion(predictions):
-    return np.argmax(np.bincount(predictions))
-
-
-def calculate_accuracy(true_labels, predictions):
-    correct_predictions = np.equal(predictions, true_labels)
-    accuracy = np.mean(correct_predictions) * 100.0
+    accuracy = correct_predictions / total_predictions
     return accuracy
 
 
@@ -199,9 +209,9 @@ for train, test in kfold.split(images, labels):
     y_train_cnn = np.array(y_train_cnn)
     y_test_cnn = np.array(y_test_cnn)
 
-    label_encoder = LabelEncoder()
-    y_train_cnn = label_encoder.fit_transform(y_train_cnn)
-    y_test_cnn = label_encoder.transform(y_test_cnn)
+    # label_encoder = LabelEncoder()
+    # y_train_cnn = label_encoder.fit_transform(y_train_cnn)
+    # y_test_cnn = label_encoder.transform(y_test_cnn)
 
     y_pred = y_test_cnn[:]
 
@@ -221,6 +231,12 @@ for train, test in kfold.split(images, labels):
     cnn_predictions = model.predict(x_test_cnn)
     print("CNN: ", svm_predictions)
     print("len(CNN): ", len(cnn_predictions))
+
+    fused_predictions_voting = fuse_predictions_voting(
+        svm_predictions, cnn_predictions)
+
+    accuracy = calculate_accuracy(y_pred, fused_predictions_voting)
+    print("Acurácia da fusão por votação:", accuracy)
 
     # results = {}
 
