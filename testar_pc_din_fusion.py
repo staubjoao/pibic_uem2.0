@@ -245,7 +245,9 @@ for train, test in kfold.split(images, labels):
         svm_predictions, cnn_predictions)
 
     accuracy_fusion = calculate_accuracy(y_pred, fused_predictions_voting)
+    loss = calculate_loss(y_pred, fused_predictions_voting)
     print("Acurácia da fusão por votação:", accuracy_fusion)
+    print("Perda da fusão por votação:", loss)
 
     # results = {}
 
@@ -264,7 +266,6 @@ for train, test in kfold.split(images, labels):
     #         raise ValueError(
     #             f'Fusion method {fusion_method} is not supported.')
     #     accuracy = calculate_accuracy(y_pred, fused_predictions)
-    #     loss = calculate_loss(y_pred, fused_predictions)
 
     #     results[fusion_method] = {'accuracy': accuracy, 'loss': loss}
 
