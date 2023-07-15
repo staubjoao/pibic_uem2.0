@@ -16,7 +16,7 @@ import itertools
 
 def fuse_predictions_voting(svm_predictions, cnn_predictions):
     fused_predictions = []
-    num_classes = max(max(svm_predictions), max(cnn_predictions)) + 1
+    num_classes = 15
 
     for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
         # Contando os votos para cada classe
