@@ -19,6 +19,8 @@ def fuse_predictions_voting(svm_predictions, cnn_predictions):
     num_classes = 15
 
     for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
+        print("svm_pred: ", svm_pred)
+        print("cnn_pred: ", cnn_pred)
         # Contando os votos para cada classe
         # Substitua num_classes pelo número real de classes
         votes = np.zeros(num_classes, dtype=int)
