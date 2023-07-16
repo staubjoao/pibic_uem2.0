@@ -200,7 +200,7 @@ for train, test in kfold.split(images, labels):
     y_test_cnn = np.array(y_test_cnn)
 
     y_pred = y_test_cnn[:]
-    print("y_pred: ", y_pred)
+    # print("y_pred: ", y_pred)
 
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
@@ -211,10 +211,10 @@ for train, test in kfold.split(images, labels):
     svm_predictions_prob = svm_model.predict_proba(x_test_svm)
     svm_predictions = np.argmax(svm_predictions_prob, axis=1)
     accuracy_svm = accuracy_score(y_pred, svm_predictions)
-    loss_svm = log_loss(y_pred, svm_predictions, labels=range(15))
+    # loss_svm = log_loss(y_pred, svm_predictions, labels=range(15))
 
     acc_per_fold_svm.append(accuracy_svm)
-    loss_per_fold_svm.append(loss_svm)
+    # loss_per_fold_svm.append(loss_svm)
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
@@ -223,10 +223,10 @@ for train, test in kfold.split(images, labels):
     if len(cnn_predictions.shape) > 1:
         cnn_predictions = np.argmax(cnn_predictions, axis=1)
     accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
-    loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
+    # loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
 
     acc_per_fold_cnn.append(accuracy_cnn)
-    loss_per_fold_cnn.append(loss_cnn)
+    # loss_per_fold_cnn.append(loss_cnn)
 
     fused_predictions_voting = fuse_predictions_voting(
         svm_predictions, cnn_predictions)
@@ -279,15 +279,15 @@ plt.savefig("fusion/acuracia_svm_cnn_fusao.png")
 plt.close()
 
 
-plt.plot(range(1, k_fold + 1), loss_per_fold_svm, marker='o')
-plt.plot(range(1, k_fold + 1), loss_per_fold_cnn, marker='o')
-plt.plot(range(1, k_fold + 1), loss_per_fold_fusion, marker='o')
-plt.xlabel('Fold')
-plt.ylabel('Acurácia')
-plt.legend(['SVM', 'CNN', 'Fusão por Votação'])
-plt.title('Perda por Fold')
-plt.savefig("fusion/perda_svm_cnn_fusao.png")
-plt.close()
+# plt.plot(range(1, k_fold + 1), loss_per_fold_svm, marker='o')
+# plt.plot(range(1, k_fold + 1), loss_per_fold_cnn, marker='o')
+# plt.plot(range(1, k_fold + 1), loss_per_fold_fusion, marker='o')
+# plt.xlabel('Fold')
+# plt.ylabel('Acurácia')
+# plt.legend(['SVM', 'CNN', 'Fusão por Votação'])
+# plt.title('Perda por Fold')
+# plt.savefig("fusion/perda_svm_cnn_fusao.png")
+# plt.close()
 
 
 fpr, tpr, _ = roc_curve(all_true_labels, all_predictions)
