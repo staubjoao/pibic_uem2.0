@@ -16,6 +16,33 @@ import matplotlib.pyplot as plt
 import itertools
 
 
+def regra_produto2(v1, v2):
+    escolha_controle = []
+    escolha_tw = []
+    escolha_controle_tratado = []
+    escolha_tw_tratado = []
+    saida = []
+    for i in range(len(v1)):
+        escolha_controle.append(v1[i][0] * v2[i][0])
+        escolha_tw.append(v1[i][1] * v2[i][1])
+        escolha_controle_tratado.append(v1[i][2])
+        escolha_tw_tratado.append(v1[i][3] * v2[i][3])
+
+    for i in range(len(escolha_tw)):
+        opcoes = [escolha_controle[i], escolha_tw[i],
+                  escolha_controle_tratado[i], escolha_tw_tratado[i]]
+        opcoes.sort(reverse=True)
+        if opcoes[0] == escolha_controle[i]:
+            saida.append(0)
+        elif opcoes[0] == escolha_tw[i]:
+            saida.append(1)
+        elif opcoes[0] == escolha_controle_tratado[i]:
+            saida.append(2)
+        elif opcoes[0] == escolha_tw_tratado[i]:
+            saida.append(3)
+    return saida
+
+
 def fuse_predictions_voting(svm_predictions, cnn_predictions):
     fused_predictions = []
     num_classes = len(cnn_predictions[0])
@@ -234,29 +261,34 @@ for train, test in kfold.split(images, labels):
     # acc_per_fold_cnn.append(accuracy_cnn)
     # loss_per_fold_cnn.append(loss_cnn)
 
-    fused_predictions_voting = fuse_predictions_voting(
-        svm_predictions_prob, cnn_predictions)
+    # fused_predictions_voting = fuse_predictions_voting(
+    #     svm_predictions_prob, cnn_predictions)
 
-    all_true_labels.extend(y_pred)
-    all_predictions.extend(fused_predictions_voting)
+    teste = regra_produto2(svm_predictions_prob, cnn_predictions)
 
-    # Calcula a acurácia e perda da fusão por votação
-    accuracy_fusion = accuracy_score(y_pred, fused_predictions_voting)
-    loss = log_loss(y_pred, fused_predictions_voting)
+    print("teste shape:", np.shape(teste))
+    print("teste:", teste)
 
-    # Armazena a acurácia e perda
-    acc_per_fold_fusion.append(accuracy_fusion)
-    loss_per_fold_fusion.append(loss)
+    # all_true_labels.extend(y_pred)
+    # all_predictions.extend(fused_predictions_voting)
 
-    # Calcula a matriz de confusão e acumula na matriz overall_confusion_matrix
-    fold_confusion_matrix = confusion_matrix(y_pred, fused_predictions_voting)
-    overall_confusion_matrix += fold_confusion_matrix
+    # # Calcula a acurácia e perda da fusão por votação
+    # accuracy_fusion = accuracy_score(y_pred, fused_predictions_voting)
+    # loss = log_loss(y_pred, fused_predictions_voting)
 
-    # Imprime os resultados para cada fold
-    print(f'Acurácia do fold {fold_no}: {accuracy_fusion}')
-    print(
-        f'Acurácia da fusão por votação do fold {fold_no}: {accuracy_fusion}')
-    print(f'Perda da fusão por votação do fold {fold_no}: {loss}')
+    # # Armazena a acurácia e perda
+    # acc_per_fold_fusion.append(accuracy_fusion)
+    # loss_per_fold_fusion.append(loss)
+
+    # # Calcula a matriz de confusão e acumula na matriz overall_confusion_matrix
+    # fold_confusion_matrix = confusion_matrix(y_pred, fused_predictions_voting)
+    # overall_confusion_matrix += fold_confusion_matrix
+
+    # # Imprime os resultados para cada fold
+    # print(f'Acurácia do fold {fold_no}: {accuracy_fusion}')
+    # print(
+    #     f'Acurácia da fusão por votação do fold {fold_no}: {accuracy_fusion}')
+    # print(f'Perda da fusão por votação do fold {fold_no}: {loss}')
 
     fold_no += 1
 
