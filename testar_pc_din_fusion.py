@@ -20,19 +20,25 @@ def fuse_predictions_voting(svm_predictions, cnn_predictions):
     fused_predictions = []
     num_classes = len(cnn_predictions[0])
 
-    for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
-        votes = np.zeros(num_classes, dtype=int)
+    print("svm shape:", svm_predictions.shape())
+    print("cnn shape:", cnn_predictions.shape())
 
-        svm_pred = int(svm_pred)
-        votes[svm_pred] += 1
+    print("svm:", svm_predictions)
+    print("cnn:", cnn_predictions)
 
-        max_class_index = np.argmax(cnn_pred)
-        votes[max_class_index] += 1
+    # for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
+    #     votes = np.zeros(num_classes, dtype=int)
 
-        fused_pred = np.argmax(votes)
-        fused_predictions.append(fused_pred)
+    #     svm_pred = int(svm_pred)
+    #     votes[svm_pred] += 1
 
-    return fused_predictions
+    #     max_class_index = np.argmax(cnn_pred)
+    #     votes[max_class_index] += 1
+
+    #     fused_pred = np.argmax(votes)
+    #     fused_predictions.append(fused_pred)
+
+    # return fused_predictions
 
 
 input_shape = (256, 256, 3)
@@ -211,20 +217,21 @@ for train, test in kfold.split(images, labels):
     # svm_predictions_prob = svm_model.predict_proba(x_test_svm)
     # svm_predictions = np.argmax(svm_predictions_prob, axis=1)
     svm_predictions = svm_model.predict(x_test_svm)
-    accuracy_svm = accuracy_score(y_pred, svm_predictions)
+    svm_predictions_prob = svm_model.predict_proba(x_test_svm)
+    # accuracy_svm = accuracy_score(y_pred, svm_predictions)
     # loss_svm = log_loss(y_pred, svm_predictions, labels=range(15))
 
-    acc_per_fold_svm.append(accuracy_svm)
+    # acc_per_fold_svm.append(accuracy_svm)
     # loss_per_fold_svm.append(loss_svm)
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
+    # accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
     # loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
 
-    acc_per_fold_cnn.append(accuracy_cnn)
+    # acc_per_fold_cnn.append(accuracy_cnn)
     # loss_per_fold_cnn.append(loss_cnn)
 
     fused_predictions_voting = fuse_predictions_voting(
