@@ -56,20 +56,6 @@ def media_ponderada(svm_preds, cnn_preds):
     return classes_preditas
 
 
-def stacking(svm_preds, cnn_preds, labels):
-    # Divida os dados em conjunto de treinamento e conjunto de teste para treinar o modelo de combinação
-    X_train, X_test, y_train, y_test = train_test_split(np.concatenate(
-        (svm_preds, cnn_preds), axis=1), labels, test_size=0.2, random_state=42)
-
-    # Treine um modelo de combinação, por exemplo, um classificador Random Forest
-    clf = RandomForestClassifier()
-    clf.fit(X_train, y_train)
-
-    # Obtenha as classes preditas usando o modelo de combinação
-    classes_preditas = clf.predict(X_test)
-    return classes_preditas
-
-
 input_shape = (256, 256, 3)
 classes = ["beach", "bus", "cafe_restaurant", "car", "city_center", "forest_path", "grocery_store",
            "home", "library", "metro_station", "office", "park", "residential_area", "train", "tram"]
@@ -281,15 +267,9 @@ for train, test in kfold.split(images, labels):
 
     acc_media_ponderada = accuracy_score(y_pred, resultado)
 
-    resultado = stacking(
-        svm_predictions_prob, cnn_predictions, y_pred)
-
-    acc_stacking = accuracy_score(y_pred, resultado)
-
     print("acc_votacao_majoritaria:", acc_votacao_majoritaria)
     print("acc_media_simples:", acc_media_simples)
     print("acc_media_ponderada:", acc_media_ponderada)
-    print("acc_stacking:", acc_stacking)
 
     # all_true_labels.extend(y_pred)
     # all_predictions.extend(fused_predictions_voting)
