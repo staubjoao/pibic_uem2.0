@@ -20,8 +20,8 @@ def fuse_predictions_voting(svm_predictions, cnn_predictions):
     fused_predictions = []
     num_classes = len(cnn_predictions[0])
 
-    print("svm shape:", svm_predictions.shape())
-    print("cnn shape:", cnn_predictions.shape())
+    print("svm shape:", np.shape(svm_predictions))
+    print("cnn shape:", np.shape(cnn_predictions))
 
     print("svm:", svm_predictions)
     print("cnn:", cnn_predictions)
