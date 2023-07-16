@@ -266,8 +266,9 @@ for train, test in kfold.split(images, labels):
 
     teste = regra_produto2(svm_predictions_prob, cnn_predictions)
 
-    print("teste shape:", np.shape(teste))
-    print("teste:", teste)
+    accuracy_fusion = accuracy_score(y_pred, teste)
+
+    print("Acuracia:", acc_per_fold_fusion)
 
     # all_true_labels.extend(y_pred)
     # all_predictions.extend(fused_predictions_voting)
