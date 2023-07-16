@@ -235,7 +235,7 @@ for train, test in kfold.split(images, labels):
     # loss_per_fold_cnn.append(loss_cnn)
 
     fused_predictions_voting = fuse_predictions_voting(
-        svm_predictions, cnn_predictions)
+        svm_predictions_prob, cnn_predictions)
 
     all_true_labels.extend(y_pred)
     all_predictions.extend(fused_predictions_voting)
