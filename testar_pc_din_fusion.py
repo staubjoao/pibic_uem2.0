@@ -200,6 +200,7 @@ for train, test in kfold.split(images, labels):
     y_test_cnn = np.array(y_test_cnn)
 
     y_pred = y_test_cnn[:]
+    print("y_pred: ", y_pred)
 
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
