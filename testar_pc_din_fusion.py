@@ -268,7 +268,7 @@ for train, test in kfold.split(images, labels):
 
     accuracy_fusion = accuracy_score(y_pred, teste)
 
-    print("Acuracia:", acc_per_fold_fusion)
+    print("Acuracia:", accuracy_fusion)
 
     # all_true_labels.extend(y_pred)
     # all_predictions.extend(fused_predictions_voting)
