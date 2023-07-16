@@ -40,6 +40,8 @@ def media_simples(svm_preds, cnn_preds):
     # Obtenha as classes preditas usando o argmax
     classes_preditas = np.argmax(preds_combinadas, axis=1)
 
+    return classes_preditas
+
 
 def media_ponderada(svm_preds, cnn_preds):
     # Defina os pesos para cada modelo
