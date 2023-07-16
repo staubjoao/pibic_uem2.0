@@ -1,6 +1,8 @@
 from sklearn.model_selection import StratifiedKFold
 from sklearn.model_selection import GridSearchCV
 from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import roc_curve, auc
 from keras.utils import to_categorical
@@ -28,6 +30,43 @@ def votacao_majoritaria_ponderada(svm_preds, cnn_preds):
     # Obtenha as classes preditas usando o argmax
     classes_preditas = np.argmax(preds_combinadas, axis=1)
 
+    return classes_preditas
+
+
+def media_simples(svm_preds, cnn_preds):
+    # Calcule as previsões combinadas por média simples
+    preds_combinadas = (svm_preds + cnn_preds) / 2.0
+
+    # Obtenha as classes preditas usando o argmax
+    classes_preditas = np.argmax(preds_combinadas, axis=1)
+
+
+def media_ponderada(svm_preds, cnn_preds):
+    # Defina os pesos para cada modelo
+    peso_svm = 0.4
+    peso_cnn = 0.6
+
+    # Calcule as previsões combinadas por média ponderada
+    preds_combinadas = (peso_svm * svm_preds + peso_cnn *
+                        cnn_preds) / (peso_svm + peso_cnn)
+
+    # Obtenha as classes preditas usando o argmax
+    classes_preditas = np.argmax(preds_combinadas, axis=1)
+
+    return classes_preditas
+
+
+def stacking(svm_preds, cnn_preds, labels):
+    # Divida os dados em conjunto de treinamento e conjunto de teste para treinar o modelo de combinação
+    X_train, X_test, y_train, y_test = train_test_split(np.concatenate(
+        (svm_preds, cnn_preds), axis=1), labels, test_size=0.2, random_state=42)
+
+    # Treine um modelo de combinação, por exemplo, um classificador Random Forest
+    clf = RandomForestClassifier()
+    clf.fit(X_train, y_train)
+
+    # Obtenha as classes preditas usando o modelo de combinação
+    classes_preditas = clf.predict(X_test)
     return classes_preditas
 
 
@@ -227,12 +266,30 @@ for train, test in kfold.split(images, labels):
     # fused_predictions_voting = fuse_predictions_voting(
     #     svm_predictions_prob, cnn_predictions)
 
-    teste = votacao_majoritaria_ponderada(
+    resultado = votacao_majoritaria_ponderada(
         svm_predictions_prob, cnn_predictions)
 
-    accuracy_fusion = accuracy_score(y_pred, teste)
+    acc_votacao_majoritaria = accuracy_score(y_pred, resultado)
 
-    print("Acuracia:", accuracy_fusion)
+    resultado = media_simples(
+        svm_predictions_prob, cnn_predictions)
+
+    acc_media_simples = accuracy_score(y_pred, resultado)
+
+    resultado = media_ponderada(
+        svm_predictions_prob, cnn_predictions)
+
+    acc_media_ponderada = accuracy_score(y_pred, resultado)
+
+    resultado = stacking(
+        svm_predictions_prob, cnn_predictions, y_pred)
+
+    acc_stacking = accuracy_score(y_pred, resultado)
+
+    print("acc_votacao_majoritaria:", acc_votacao_majoritaria)
+    print("acc_media_simples:", acc_media_simples)
+    print("acc_media_ponderada:", acc_media_ponderada)
+    print("acc_stacking:", acc_stacking)
 
     # all_true_labels.extend(y_pred)
     # all_predictions.extend(fused_predictions_voting)
