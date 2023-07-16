@@ -16,56 +16,19 @@ import matplotlib.pyplot as plt
 import itertools
 
 
-def regra_produto2(v1, v2):
-    escolha_controle = []
-    escolha_tw = []
-    escolha_controle_tratado = []
-    escolha_tw_tratado = []
-    saida = []
-    for i in range(len(v1)):
-        escolha_controle.append(v1[i][0] * v2[i][0])
-        escolha_tw.append(v1[i][1] * v2[i][1])
-        escolha_controle_tratado.append(v1[i][2])
-        escolha_tw_tratado.append(v1[i][3] * v2[i][3])
+def votacao_majoritaria_ponderada(svm_preds, cnn_preds):
+    # Defina os pesos para cada modelo
+    peso_svm = 0.4
+    peso_cnn = 0.6
 
-    for i in range(len(escolha_tw)):
-        opcoes = [escolha_controle[i], escolha_tw[i],
-                  escolha_controle_tratado[i], escolha_tw_tratado[i]]
-        opcoes.sort(reverse=True)
-        if opcoes[0] == escolha_controle[i]:
-            saida.append(0)
-        elif opcoes[0] == escolha_tw[i]:
-            saida.append(1)
-        elif opcoes[0] == escolha_controle_tratado[i]:
-            saida.append(2)
-        elif opcoes[0] == escolha_tw_tratado[i]:
-            saida.append(3)
-    return saida
+    # Calcule as previsões combinadas por votação majoritária ponderada
+    preds_combinadas = (peso_svm * svm_preds + peso_cnn *
+                        cnn_preds) / (peso_svm + peso_cnn)
 
+    # Obtenha as classes preditas usando o argmax
+    classes_preditas = np.argmax(preds_combinadas, axis=1)
 
-def fuse_predictions_voting(svm_predictions, cnn_predictions):
-    fused_predictions = []
-    num_classes = len(cnn_predictions[0])
-
-    print("svm shape:", np.shape(svm_predictions))
-    print("cnn shape:", np.shape(cnn_predictions))
-
-    print("svm:", svm_predictions)
-    print("cnn:", cnn_predictions)
-
-    # for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
-    #     votes = np.zeros(num_classes, dtype=int)
-
-    #     svm_pred = int(svm_pred)
-    #     votes[svm_pred] += 1
-
-    #     max_class_index = np.argmax(cnn_pred)
-    #     votes[max_class_index] += 1
-
-    #     fused_pred = np.argmax(votes)
-    #     fused_predictions.append(fused_pred)
-
-    # return fused_predictions
+    return classes_preditas
 
 
 input_shape = (256, 256, 3)
@@ -264,7 +227,8 @@ for train, test in kfold.split(images, labels):
     # fused_predictions_voting = fuse_predictions_voting(
     #     svm_predictions_prob, cnn_predictions)
 
-    teste = regra_produto2(svm_predictions_prob, cnn_predictions)
+    teste = votacao_majoritaria_ponderada(
+        svm_predictions_prob, cnn_predictions)
 
     accuracy_fusion = accuracy_score(y_pred, teste)
 
