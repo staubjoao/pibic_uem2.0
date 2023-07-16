@@ -210,10 +210,10 @@ for train, test in kfold.split(images, labels):
     svm_predictions_prob = svm_model.predict_proba(x_test_svm)
     svm_predictions = np.argmax(svm_predictions_prob, axis=1)
     accuracy_svm = accuracy_score(y_pred, svm_predictions)
-    loss_cnn = log_loss(y_pred, svm_predictions_prob)
+    loss_svm = log_loss(y_pred, svm_predictions, labels=range(15))
 
     acc_per_fold_svm.append(accuracy_svm)
-    loss_per_fold_svm.append(loss_cnn)
+    loss_per_fold_svm.append(loss_svm)
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
@@ -222,7 +222,7 @@ for train, test in kfold.split(images, labels):
     if len(cnn_predictions.shape) > 1:
         cnn_predictions = np.argmax(cnn_predictions, axis=1)
     accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
-    loss_cnn = log_loss(y_pred, cnn_predictions)
+    loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
 
     acc_per_fold_cnn.append(accuracy_cnn)
     loss_per_fold_cnn.append(loss_cnn)
