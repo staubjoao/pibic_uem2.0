@@ -207,9 +207,10 @@ for train, test in kfold.split(images, labels):
     # SVM
     svm_model = SVC(C=100, kernel='poly', gamma='scale', probability=True)
     svm_model.fit(x_train_svm, y_train_svm)
-    svm_predictions = svm_model.predict_proba(x_test_svm)
+    svm_predictions_prob = svm_model.predict_proba(x_test_svm)
+    svm_predictions = np.argmax(svm_predictions_prob, axis=1)
     accuracy_svm = accuracy_score(y_pred, svm_predictions)
-    loss_cnn = log_loss(y_pred, svm_predictions)
+    loss_cnn = log_loss(y_pred, svm_predictions_prob)
 
     acc_per_fold_svm.append(accuracy_svm)
     loss_per_fold_svm.append(loss_cnn)
