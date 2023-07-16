@@ -221,8 +221,6 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    if len(cnn_predictions.shape) > 1:
-        cnn_predictions = np.argmax(cnn_predictions, axis=1)
     accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
     # loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
 
