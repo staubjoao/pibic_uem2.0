@@ -283,19 +283,15 @@ for train, test in kfold.split(images, labels):
     fold_no += 1
 
 print("Fusão")
-print("Acurácia média para votação majoritária ponderada:",
-      np.mean(acc_votacao_majoritaria))
-print("Acurácia média para média simples:", np.mean(acc_media_simples))
-print("Acurácia média para média ponderada:", np.mean(acc_media_ponderada))
-print("Acurácia média para maiores valores:", np.mean(acc_maiores_valores))
-
-lista_acuracia = [acc_votacao_majoritaria, acc_media_simples,
-                  acc_media_ponderada, acc_maiores_valores]
+lista_acuracia = [np.mean(acc_votacao_majoritaria), np.mean(acc_media_simples),
+                  np.mean(acc_media_ponderada), np.mean(acc_maiores_valores)]
 nomes_metodos = ['Votação Majoritária', 'Média Simples',
                  'Média Ponderada', 'Maiores Valores']
 
-melhor_metodo = np.argmax(lista_acuracia) - 1
-print(melhor_metodo)
+for i in range(len(nomes_metodos)):
+    print(f"Acurácia média para {nomes_metodos[i]}: {lista_acuracia[i]}")
+
+melhor_metodo = np.argmax(lista_acuracia)
 melhor_acuracia = lista_acuracia[melhor_metodo]
 nome_melhor_metodo = nomes_metodos[melhor_metodo]
 
