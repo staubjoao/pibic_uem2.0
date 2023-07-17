@@ -254,6 +254,10 @@ for train, test in kfold.split(images, labels):
     resultado_maiores_valores = maiores_valores(
         svm_predictions, cnn_predictions)
 
+    print("vetor_resultados_votacao_majoritaria shape:",
+          np.shape(vetor_resultados_votacao_majoritaria))
+    print("resultado_votacao_majoritaria shape:",
+          np.shape(resultado_votacao_majoritaria))
     vetor_resultados_votacao_majoritaria = np.concatenate(
         vetor_resultados_votacao_majoritaria, resultado_votacao_majoritaria)
     vetor_resultados_media_simples = np.concatenate(
