@@ -295,6 +295,7 @@ nomes_metodos = ['Votação Majoritária', 'Média Simples',
                  'Média Ponderada', 'Maiores Valores']
 
 melhor_metodo = np.argmax(lista_acuracia) - 1
+print(melhor_metodo)
 melhor_acuracia = lista_acuracia[melhor_metodo]
 nome_melhor_metodo = nomes_metodos[melhor_metodo]
 
