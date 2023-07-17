@@ -1,14 +1,6 @@
-from sklearn.model_selection import StratifiedKFold
-from sklearn.model_selection import GridSearchCV
-from sklearn.preprocessing import LabelEncoder
-from sklearn.model_selection import train_test_split
-from sklearn.ensemble import RandomForestClassifier
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import roc_curve, auc
+from sklearn.metrics import confusion_matrix, classification_report
 from keras.utils import to_categorical
-from keras.losses import categorical_crossentropy
 from sklearn.metrics import accuracy_score
-from sklearn.metrics import log_loss
 import numpy as np
 from sklearn.model_selection import KFold
 from sklearn.svm import SVC
@@ -58,6 +50,16 @@ def media_ponderada(svm_preds, cnn_preds):
     return classes_preditas
 
 
+def maiores_valores(svm_preds, cnn_preds):
+    # Realize a fusão selecionando os maiores valores entre as previsões de cada modelo
+    fusion_preds = np.maximum(svm_preds, cnn_preds)
+
+    # Obtenha as classes preditas usando o argmax
+    classes_preditas = np.argmax(fusion_preds, axis=1)
+
+    return classes_preditas
+
+
 input_shape = (256, 256, 3)
 classes = ["beach", "bus", "cafe_restaurant", "car", "city_center", "forest_path", "grocery_store",
            "home", "library", "metro_station", "office", "park", "residential_area", "train", "tram"]
@@ -84,7 +86,7 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('Classe verdadeira')
     plt.xlabel('Classe prevista')
 
-    plt.savefig("saida/confusion_matrix_fold_"+str(fold)+".png")
+    plt.savefig("fusion/confusion_matrix_fold_"+str(fold)+".png")
 
     plt.close()
 
@@ -161,16 +163,21 @@ for linha in arq:
     y.append(int(aux[len(aux)-1].replace("\n", "")))
 arq.close()
 
-acc_per_fold_cnn = []
-acc_per_fold_svm = []
-acc_per_fold_fusion = []
-loss_per_fold_cnn = []
-loss_per_fold_svm = []
-loss_per_fold_fusion = []
 histories = []
 scores_array = []
 all_true_labels = []
 all_predictions = []
+
+acc_votacao_majoritaria = []
+acc_media_simples = []
+acc_media_ponderada = []
+acc_maiores_valores = []
+
+y_preds = []
+vetor_resultados_votacao_majoritaria = []
+vetor_resultados_media_simples = []
+vetor_resultados_media_ponderada = []
+vetor_resultados_maiores_valores = []
 
 
 k_fold = 5
@@ -223,7 +230,7 @@ for train, test in kfold.split(images, labels):
     y_test_cnn = np.array(y_test_cnn)
 
     y_pred = y_test_cnn[:]
-    # print("y_pred: ", y_pred)
+    y_preds = np.concatenate((y_preds, y_pred))
 
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
@@ -231,186 +238,79 @@ for train, test in kfold.split(images, labels):
     # SVM
     svm_model = SVC(C=100, kernel='poly', gamma='scale', probability=True)
     svm_model.fit(x_train_svm, y_train_svm)
-    # svm_predictions_prob = svm_model.predict_proba(x_test_svm)
-    # svm_predictions = np.argmax(svm_predictions_prob, axis=1)
-    svm_predictions = svm_model.predict(x_test_svm)
-    svm_predictions_prob = svm_model.predict_proba(x_test_svm)
-    # accuracy_svm = accuracy_score(y_pred, svm_predictions)
-    # loss_svm = log_loss(y_pred, svm_predictions, labels=range(15))
-
-    # acc_per_fold_svm.append(accuracy_svm)
-    # loss_per_fold_svm.append(loss_svm)
+    svm_predictions = svm_model.predict_proba(x_test_svm)
 
     # CNN
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
-    # accuracy_cnn = accuracy_score(y_pred, cnn_predictions)
-    # loss_cnn = log_loss(y_pred, cnn_predictions, labels=range(15))
 
-    # acc_per_fold_cnn.append(accuracy_cnn)
-    # loss_per_fold_cnn.append(loss_cnn)
+    resultado_votacao_majoritaria = votacao_majoritaria_ponderada(
+        svm_predictions, cnn_predictions)
+    resultado_media_simples = media_simples(
+        svm_predictions, cnn_predictions)
+    resultado_media_ponderada = media_ponderada(
+        svm_predictions, cnn_predictions)
+    resultado_maiores_valores = maiores_valores(
+        svm_predictions, cnn_predictions)
 
-    # fused_predictions_voting = fuse_predictions_voting(
-    #     svm_predictions_prob, cnn_predictions)
+    vetor_resultados_votacao_majoritaria = np.concatenate(
+        vetor_resultados_votacao_majoritaria, resultado_votacao_majoritaria)
+    vetor_resultados_media_simples = np.concatenate(
+        vetor_resultados_media_simples, resultado_media_simples)
+    vetor_resultados_media_ponderada = np.concatenate(
+        vetor_resultados_media_ponderada, resultado_media_ponderada)
+    vetor_resultados_maiores_valores = np.concatenate(
+        vetor_resultados_maiores_valores, resultado_maiores_valores)
 
-    resultado = votacao_majoritaria_ponderada(
-        svm_predictions_prob, cnn_predictions)
-
-    acc_votacao_majoritaria = accuracy_score(y_pred, resultado)
-
-    resultado = media_simples(
-        svm_predictions_prob, cnn_predictions)
-
-    acc_media_simples = accuracy_score(y_pred, resultado)
-
-    resultado = media_ponderada(
-        svm_predictions_prob, cnn_predictions)
-
-    acc_media_ponderada = accuracy_score(y_pred, resultado)
+    acc_votacao_majoritaria.append(accuracy_score(
+        y_pred, resultado_votacao_majoritaria))
+    acc_media_simples.append(accuracy_score(
+        y_pred, resultado_media_simples))
+    acc_media_ponderada.append(accuracy_score(
+        y_pred, resultado_media_ponderada))
+    acc_maiores_valores.append(accuracy_score(
+        y_pred, resultado_maiores_valores))
 
     print("acc_votacao_majoritaria:", acc_votacao_majoritaria)
     print("acc_media_simples:", acc_media_simples)
     print("acc_media_ponderada:", acc_media_ponderada)
-
-    # all_true_labels.extend(y_pred)
-    # all_predictions.extend(fused_predictions_voting)
-
-    # # Calcula a acurácia e perda da fusão por votação
-    # accuracy_fusion = accuracy_score(y_pred, fused_predictions_voting)
-    # loss = log_loss(y_pred, fused_predictions_voting)
-
-    # # Armazena a acurácia e perda
-    # acc_per_fold_fusion.append(accuracy_fusion)
-    # loss_per_fold_fusion.append(loss)
-
-    # # Calcula a matriz de confusão e acumula na matriz overall_confusion_matrix
-    # fold_confusion_matrix = confusion_matrix(y_pred, fused_predictions_voting)
-    # overall_confusion_matrix += fold_confusion_matrix
-
-    # # Imprime os resultados para cada fold
-    # print(f'Acurácia do fold {fold_no}: {accuracy_fusion}')
-    # print(
-    #     f'Acurácia da fusão por votação do fold {fold_no}: {accuracy_fusion}')
-    # print(f'Perda da fusão por votação do fold {fold_no}: {loss}')
+    print("acc_maiores_valores:", acc_maiores_valores)
 
     fold_no += 1
 
 print("Fusão")
-for i, accuracy in enumerate(acc_per_fold_fusion):
-    print(f"Fold {i+1} - Accuracy: {accuracy}")
+print("Acurácia média para votação majoritária ponderada:",
+      np.mean(acc_votacao_majoritaria))
+print("Acurácia média para média simples:", np.mean(acc_media_simples))
+print("Acurácia média para média ponderada:", np.mean(acc_media_ponderada))
+print("Acurácia média para maiores valores:", np.mean(acc_maiores_valores))
 
-avg_accuracy_fusion = np.mean(acc_per_fold_fusion)
-print(f"Média accuracy: {avg_accuracy_fusion}")
+lista_acuracia = [acc_votacao_majoritaria, acc_media_simples,
+                  acc_media_ponderada, acc_maiores_valores]
+nomes_metodos = ['Votação Majoritária', 'Média Simples',
+                 'Média Ponderada', 'Maiores Valores']
 
-for i, class_name in enumerate(classes):
-    true_count = np.sum(overall_confusion_matrix[i, :])
-    print(f'Classe {class_name}: Total real = {true_count}')
+melhor_metodo = np.argmax(lista_acuracia)
+melhor_acuracia = lista_acuracia[melhor_metodo]
+nome_melhor_metodo = nomes_metodos[melhor_metodo]
 
-plot_confusion_matrix(overall_confusion_matrix, classes=[
+print("Melhor método", nome_melhor_metodo)
+resultado = []
+if melhor_metodo == 0:
+    resultado = vetor_resultados_votacao_majoritaria[:]
+elif melhor_metodo == 1:
+    resultado = vetor_resultados_media_simples[:]
+elif melhor_metodo == 2:
+    resultado = vetor_resultados_media_ponderada[:]
+elif melhor_metodo == 3:
+    resultado = vetor_resultados_maiores_valores[:]
+
+matriz_confusao = confusion_matrix(y_preds, resultado)
+relatorio_classificacao = classification_report(y_preds, resultado)
+
+plot_confusion_matrix(matriz_confusao, classes=[
     i for i in range(1, 16)], title='Matriz geral')
 
-plt.plot(range(1, k_fold + 1), acc_per_fold_svm, marker='o')
-plt.plot(range(1, k_fold + 1), acc_per_fold_cnn, marker='o')
-plt.plot(range(1, k_fold + 1), acc_per_fold_fusion, marker='o')
-plt.xlabel('Fold')
-plt.ylabel('Acurácia')
-plt.legend(['SVM', 'CNN', 'Fusão por Votação'])
-plt.title('Acurácia por Fold')
-plt.savefig("fusion/acuracia_svm_cnn_fusao.png")
-plt.close()
-
-
-# plt.plot(range(1, k_fold + 1), loss_per_fold_svm, marker='o')
-# plt.plot(range(1, k_fold + 1), loss_per_fold_cnn, marker='o')
-# plt.plot(range(1, k_fold + 1), loss_per_fold_fusion, marker='o')
-# plt.xlabel('Fold')
-# plt.ylabel('Acurácia')
-# plt.legend(['SVM', 'CNN', 'Fusão por Votação'])
-# plt.title('Perda por Fold')
-# plt.savefig("fusion/perda_svm_cnn_fusao.png")
-# plt.close()
-
-
-fpr, tpr, _ = roc_curve(all_true_labels, all_predictions)
-roc_auc = auc(fpr, tpr)
-
-plt.plot(fpr, tpr, label='Curva ROC (AUC = %0.2f)' % roc_auc)
-plt.plot([0, 1], [0, 1], 'k--')
-plt.xlabel('Taxa de Falsos Positivos')
-plt.ylabel('Taxa de Verdadeiros Positivos')
-plt.title('Curva ROC para Todos os Folds')
-plt.legend(loc='lower right')
-plt.savefig("fusion/roc_curve.png")
-plt.close()
-
-# # == Provide average scores ==
-# print('------------------------------------------------------------------------')
-# print('Score per fold')
-# for i in range(0, len(acc_per_fold)):
-#     print('------------------------------------------------------------------------')
-#     print(
-#         f'> Fold {i+1} - Loss: {loss_per_fold[i]} - Accuracy: {acc_per_fold[i]}%')
-# print('------------------------------------------------------------------------')
-# print('Average scores for all folds:')
-# print(f'> Accuracy: {np.mean(acc_per_fold)} (+- {np.std(acc_per_fold)})')
-# print(f'> Loss: {np.mean(loss_per_fold)}')
-# print('------------------------------------------------------------------------')
-
-
-# # loss = []
-# accuracy = []
-
-# for i in range(k_fold):
-#     # aux_loss = histories[i]['loss']
-#     aux_accuracy = histories[i]['accuracy']
-
-#     # loss.append(aux_loss)
-#     accuracy.append(aux_accuracy)
-
-
-# plt.figure(figsize=(15, 5))
-
-# # plt_loss = plt.subplot(121)
-# # for fold in range(len(loss)):
-# #     plt.plot(loss[fold], label=f'fold {fold+1}')
-# # plt.title("Perda")
-# # plt.ylabel("Perda")
-# # plt.xlabel("Época")
-# # plt.legend()
-
-# plt_accuracy = plt.subplot(122)
-# for fold in range(len(accuracy)):
-#     plt.plot(accuracy[fold], label=f'fold {fold+1}')
-# plt.title("Acurácia")
-# plt.ylabel("Acurácia")
-# plt.xlabel("Época")
-# plt.legend()
-
-# # Salvar os gráficos em formato PNG
-# plt.savefig("saida/graficos.png")
-
-# plt.figure(figsize=(10, 5))
-
-# # plt.subplot(1, 2, 1)
-# # plt.boxplot(loss)
-# # plt.title('Validação Perda')
-# # plt.xlabel('fold')
-# # plt.ylabel('Perda')
-
-# plt.subplot(1, 2, 2)
-# plt.boxplot(accuracy)
-# plt.title('Validação Acurácia')
-# plt.xlabel('fold')
-# plt.ylabel('Acurácia')
-
-# plt.tight_layout()
-
-# plt.savefig("saida/boxplot.png")
-
-# model_json = model.to_json()
-# with open("saida/model.json", "w") as json_file:
-#     json_file.write(model_json)
-
-# model.save_weights("saida/model.h5")
-# print("Saved model to disk")
+print("Tabela F1-score - {}".format(nome_melhor_metodo))
+print(relatorio_classificacao)
