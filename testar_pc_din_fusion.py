@@ -266,19 +266,21 @@ for train, test in kfold.split(images, labels):
     for res in resultado_maiores_valores:
         vetor_resultados_maiores_valores.append(res)
 
-    acc_votacao_majoritaria.append(accuracy_score(
-        y_pred, resultado_votacao_majoritaria))
-    acc_media_simples.append(accuracy_score(
-        y_pred, resultado_media_simples))
-    acc_media_ponderada.append(accuracy_score(
-        y_pred, resultado_media_ponderada))
-    acc_maiores_valores.append(accuracy_score(
-        y_pred, resultado_maiores_valores))
+    acc_aux = accuracy_score(y_pred, resultado_votacao_majoritaria)
+    acc_votacao_majoritaria.append(acc_aux)
+    print("acc_votacao_majoritaria:", acc_aux)
 
-    print("acc_votacao_majoritaria:", acc_votacao_majoritaria)
-    print("acc_media_simples:", acc_media_simples)
-    print("acc_media_ponderada:", acc_media_ponderada)
-    print("acc_maiores_valores:", acc_maiores_valores)
+    acc_aux = accuracy_score(y_pred, resultado_media_simples)
+    acc_media_simples.append(acc_aux)
+    print("acc_media_simples:", acc_aux)
+
+    acc_aux = accuracy_score(y_pred, resultado_media_ponderada)
+    acc_media_ponderada.append(acc_aux)
+    print("acc_media_ponderada:", acc_aux)
+
+    acc_aux = accuracy_score(y_pred, resultado_maiores_valores)
+    acc_maiores_valores.append(acc_aux)
+    print("acc_maiores_valores:", acc_aux)
 
     fold_no += 1
 
