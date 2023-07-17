@@ -179,9 +179,12 @@ vetor_resultados_media_simples = []
 vetor_resultados_media_ponderada = []
 vetor_resultados_maiores_valores = []
 
+acc_per_fold = []
+loss_per_fold = []
+
 
 k_fold = 5
-epochs = 2
+epochs = 50
 batch_size = 32
 overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
@@ -241,8 +244,11 @@ for train, test in kfold.split(images, labels):
     svm_predictions = svm_model.predict_proba(x_test_svm)
 
     # CNN
+    history = model.fit(x_train_cnn, y_train_cnn,
+                        batch_size=batch_size,
+                        epochs=epochs)
+    histories.append(history.history)
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
-    histories.append(model.history.history)
     cnn_predictions = model.predict(x_test_cnn)
 
     resultado_votacao_majoritaria = votacao_majoritaria_ponderada(
@@ -282,6 +288,15 @@ for train, test in kfold.split(images, labels):
     acc_maiores_valores.append(acc_aux)
     print("acc_maiores_valores:", acc_aux)
 
+    if scores[1] > best_acc:
+        best_acc = scores[1]
+        best_model = model
+    scores_array.append(scores)
+    print(
+        f'Score for fold {fold_no}: {model.metrics_names[0]} of {scores[0]}; {model.metrics_names[1]} of {scores[1]*100}%')
+    acc_per_fold.append(scores[1] * 100)
+    loss_per_fold.append(scores[0])
+
     fold_no += 1
 
 print("Fusão")
@@ -316,3 +331,60 @@ plot_confusion_matrix(matriz_confusao, classes=[
 
 print("Tabela F1-score - {}".format(nome_melhor_metodo))
 print(relatorio_classificacao)
+
+loss = []
+accuracy = []
+
+for i in range(k_fold):
+    aux_loss = histories[i]['loss']
+    aux_accuracy = histories[i]['accuracy']
+
+    loss.append(aux_loss)
+    accuracy.append(aux_accuracy)
+
+
+plt.figure(figsize=(15, 5))
+
+plt_loss = plt.subplot(121)
+for fold in range(len(loss)):
+    plt.plot(loss[fold], label=f'fold {fold+1}')
+plt.title("Perda")
+plt.ylabel("Perda")
+plt.xlabel("Época")
+plt.legend()
+
+plt_accuracy = plt.subplot(122)
+for fold in range(len(accuracy)):
+    plt.plot(accuracy[fold], label=f'fold {fold+1}')
+plt.title("Acurácia")
+plt.ylabel("Acurácia")
+plt.xlabel("Época")
+plt.legend()
+
+# Salvar os gráficos em formato PNG
+plt.savefig("saida/graficos.png")
+
+plt.figure(figsize=(10, 5))
+
+plt.subplot(1, 2, 1)
+plt.boxplot(loss)
+plt.title('Validação Perda')
+plt.xlabel('fold')
+plt.ylabel('Perda')
+
+plt.subplot(1, 2, 2)
+plt.boxplot(accuracy)
+plt.title('Validação Acurácia')
+plt.xlabel('fold')
+plt.ylabel('Acurácia')
+
+plt.tight_layout()
+
+plt.savefig("saida/boxplot.png")
+
+model_json = model.to_json()
+with open("saida/model.json", "w") as json_file:
+    json_file.write(model_json)
+
+model.save_weights("saida/model.h5")
+print("Saved model to disk")
