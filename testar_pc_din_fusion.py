@@ -127,10 +127,9 @@ images = []
 X = []
 y = []
 
+# Leitura dos dados para a CNN
 path = './spec_janela2/'
-
 max_imagens = 1170
-
 j = 0
 k = 0
 for i in range(1170):
@@ -148,7 +147,7 @@ for i in range(1170):
     labels.append(k)
     j += 1
 
-
+# Leitura dos dados para SVM
 arq = open("./features_LBP_janela.txt", "r")
 for linha in arq:
     aux = linha.split("|")
@@ -165,40 +164,40 @@ arq.close()
 
 histories = []
 scores_array = []
-all_true_labels = []
-all_predictions = []
-
 acc_votacao_majoritaria = []
 acc_media_simples = []
 acc_media_ponderada = []
 acc_maiores_valores = []
-
-y_preds = []
 vetor_resultados_votacao_majoritaria = []
 vetor_resultados_media_simples = []
 vetor_resultados_media_ponderada = []
 vetor_resultados_maiores_valores = []
-
-acc_per_fold = []
-loss_per_fold = []
+y_preds = []
 
 
+# Definição dos valores para treinamento
 k_fold = 5
 epochs = 50
 batch_size = 32
-overall_confusion_matrix = np.zeros((len(classes), len(classes)))
 
+# Para a CNN
+acc_per_fold = []
+loss_per_fold = []
 best_model, best_acc = None, 0.0
 
+# Split dos folds
 kfold = KFold(n_splits=k_fold, shuffle=True)
 
+# For para treinamento entre os folds
 fold_no = 1
 for train, test in kfold.split(images, labels):
+    # Criação do modelo
     model = cnn_model()
 
     print('------------------------------------------------------------------------')
     print(f'Treinamento para o fold {fold_no} ...')
 
+    # Vetores para teste e treinamento
     x_train_cnn = []
     y_train_cnn = []
 
@@ -211,6 +210,7 @@ for train, test in kfold.split(images, labels):
     x_test_svm = []
     y_test_svm = []
 
+    # Fazendo o split dos dados para treinamento
     for i in train:
         for j in range(6):
             x_train_cnn.append(images[i][j])
@@ -219,6 +219,7 @@ for train, test in kfold.split(images, labels):
             x_train_svm.append(X[i][j])
             y_train_svm.append(y[i])
 
+    # Fazendo o split dos dados para teste
     for i in test:
         for j in range(6):
             x_test_cnn.append(images[i][j])
@@ -227,13 +228,15 @@ for train, test in kfold.split(images, labels):
             x_test_svm.append(X[i][j])
             y_test_svm.append(y[i])
 
+    # Tranformando em vetores numpy
     x_train_cnn = np.array(x_train_cnn)
     x_test_cnn = np.array(x_test_cnn)
     y_train_cnn = np.array(y_train_cnn)
     y_test_cnn = np.array(y_test_cnn)
 
     y_pred = y_test_cnn[:]
-    y_preds = np.concatenate((y_preds, y_pred))
+    for res in y_pred:
+        y_preds.append(res)
 
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
@@ -251,6 +254,7 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     cnn_predictions = model.predict(x_test_cnn)
 
+    # Acurácia para cada fusão
     resultado_votacao_majoritaria = votacao_majoritaria_ponderada(
         svm_predictions, cnn_predictions)
     resultado_media_simples = media_simples(
@@ -260,6 +264,7 @@ for train, test in kfold.split(images, labels):
     resultado_maiores_valores = maiores_valores(
         svm_predictions, cnn_predictions)
 
+    # Adiciona o resultado no vetor para fazer a validação fora do for
     for res in resultado_votacao_majoritaria:
         vetor_resultados_votacao_majoritaria.append(res)
 
@@ -272,6 +277,7 @@ for train, test in kfold.split(images, labels):
     for res in resultado_maiores_valores:
         vetor_resultados_maiores_valores.append(res)
 
+    # Imprime os resultados
     acc_aux = accuracy_score(y_pred, resultado_votacao_majoritaria)
     acc_votacao_majoritaria.append(acc_aux)
     print("acc_votacao_majoritaria:", acc_aux)
@@ -288,6 +294,7 @@ for train, test in kfold.split(images, labels):
     acc_maiores_valores.append(acc_aux)
     print("acc_maiores_valores:", acc_aux)
 
+    # Recolhe as melhores accuracias no modelo CNN para salvar depois
     if scores[1] > best_acc:
         best_acc = scores[1]
         best_model = model
@@ -299,19 +306,23 @@ for train, test in kfold.split(images, labels):
 
     fold_no += 1
 
+# Imprime os resultados
 print("Fusão")
 lista_acuracia = [np.mean(acc_votacao_majoritaria), np.mean(acc_media_simples),
                   np.mean(acc_media_ponderada), np.mean(acc_maiores_valores)]
 nomes_metodos = ['Votação Majoritária', 'Média Simples',
                  'Média Ponderada', 'Maiores Valores']
 
+# Acurácia média para cada fusão
 for i in range(len(nomes_metodos)):
     print(f"Acurácia média para {nomes_metodos[i]}: {lista_acuracia[i]}")
 
+# Armazena o melhor método de fusão
 melhor_metodo = np.argmax(lista_acuracia)
 melhor_acuracia = lista_acuracia[melhor_metodo]
 nome_melhor_metodo = nomes_metodos[melhor_metodo]
 
+# Imprime e plota a matriz e o f1-score
 print("Melhor método", nome_melhor_metodo)
 resultado = []
 if melhor_metodo == 0:
@@ -335,6 +346,7 @@ print(relatorio_classificacao)
 loss = []
 accuracy = []
 
+# Para plotar os graficos para CNN
 for i in range(k_fold):
     aux_loss = histories[i]['loss']
     aux_accuracy = histories[i]['accuracy']
@@ -342,9 +354,8 @@ for i in range(k_fold):
     loss.append(aux_loss)
     accuracy.append(aux_accuracy)
 
-
+# Plot dos graficos da CNN
 plt.figure(figsize=(15, 5))
-
 plt_loss = plt.subplot(121)
 for fold in range(len(loss)):
     plt.plot(loss[fold], label=f'fold {fold+1}')
@@ -365,7 +376,6 @@ plt.legend()
 plt.savefig("saida/graficos.png")
 
 plt.figure(figsize=(10, 5))
-
 plt.subplot(1, 2, 1)
 plt.boxplot(loss)
 plt.title('Validação Perda')
@@ -379,9 +389,9 @@ plt.xlabel('fold')
 plt.ylabel('Acurácia')
 
 plt.tight_layout()
-
 plt.savefig("saida/boxplot.png")
 
+# Salvar modelo
 model_json = model.to_json()
 with open("saida/model.json", "w") as json_file:
     json_file.write(model_json)
