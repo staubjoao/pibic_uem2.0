@@ -1,0 +1,27 @@
+Acurácia média para Votação Majoritária: 0.9239316239316239
+Acurácia média para Média Simples: 0.9235042735042736
+Acurácia média para Média Ponderada: 0.9239316239316239
+Acurácia média para Maiores Valores: 0.9196581196581196
+Melhor método Votação Majoritária
+Tabela F1-score - Votação Majoritária
+              precision    recall  f1-score   support
+
+           0       0.92      0.96      0.94       468
+           1       0.93      0.92      0.93       468
+           2       0.93      0.97      0.95       468
+           3       0.92      0.97      0.95       468
+           4       0.86      0.92      0.89       468
+           5       0.96      0.96      0.96       468
+           6       0.95      0.96      0.96       468
+           7       0.96      0.94      0.95       468
+           8       0.91      0.96      0.93       468
+           9       0.92      0.87      0.89       468
+          10       0.97      0.98      0.97       468
+          11       0.87      0.90      0.89       468
+          12       0.86      0.77      0.81       468
+          13       0.98      0.86      0.91       468
+          14       0.95      0.93      0.94       468
+
+    accuracy                           0.92      7020
+   macro avg       0.92      0.92      0.92      7020
+weighted avg       0.92      0.92      0.92      7020
