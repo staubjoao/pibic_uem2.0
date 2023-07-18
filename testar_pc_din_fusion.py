@@ -86,7 +86,7 @@ def plot_confusion_matrix(cm, classes,
     plt.ylabel('Classe verdadeira')
     plt.xlabel('Classe prevista')
 
-    plt.savefig("fusion/confusion_matrix_fold_"+str(fold)+".png")
+    plt.savefig("fusion2/confusion_matrix_fold_"+str(fold)+".png")
 
     plt.close()
 
@@ -178,7 +178,7 @@ y_preds = []
 # Definição dos valores para treinamento
 k_fold = 5
 epochs = 50
-batch_size = 32
+batch_size = 64
 
 # Para a CNN
 acc_per_fold = []
@@ -373,7 +373,7 @@ plt.xlabel("Época")
 plt.legend()
 
 # Salvar os gráficos em formato PNG
-plt.savefig("saida/graficos.png")
+plt.savefig("saida2/graficos.png")
 
 plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1)
@@ -389,11 +389,11 @@ plt.xlabel('fold')
 plt.ylabel('Acurácia')
 
 plt.tight_layout()
-plt.savefig("saida/boxplot.png")
+plt.savefig("saida2/boxplot.png")
 
 # Salvar modelo
 model_json = model.to_json()
-with open("saida/model.json", "w") as json_file:
+with open("saida2/model.json", "w") as json_file:
     json_file.write(model_json)
 
 model.save_weights("saida/model.h5")
