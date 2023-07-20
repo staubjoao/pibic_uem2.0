@@ -190,10 +190,6 @@ vetor_resultados_media_ponderada = []
 vetor_resultados_maiores_valores = []
 y_preds = []
 
-svm_predictions_fold = np.array([])
-cnn_predictions_fold = np.array([])
-y_pred_fold = np.array([])
-
 
 # Definição dos valores para treinamento
 k_fold = 5
@@ -212,10 +208,6 @@ kfold = KFold(n_splits=k_fold, shuffle=True)
 # For para treinamento entre os folds
 fold_no = 1
 for train, test in kfold.split(images, labels):
-    acc_aux_real_fold = np.array([])
-    acc_aux_svm_fold = np.array([])
-    acc_aux_cnn_fold = np.array([])
-
     # Criação do modelo
     model = cnn_model()
 
@@ -263,8 +255,6 @@ for train, test in kfold.split(images, labels):
     for res in y_pred:
         y_preds.append(res)
 
-    y_pred_fold = np.vstack(y_pred_fold, y_pred)
-
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
 
@@ -272,8 +262,6 @@ for train, test in kfold.split(images, labels):
     svm_model = SVC(C=100, kernel='poly', gamma='scale', probability=True)
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict_proba(x_test_svm)
-
-    svm_predictions_fold = np.vstack(svm_predictions_fold, svm_predictions)
 
     svm_predictions_acc = svm_model.predict(x_test_svm)
     acc_svm = accuracy_score(y_test_svm, svm_predictions_acc)
@@ -290,7 +278,13 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     cnn_predictions = model.predict(x_test_cnn)
 
-    cnn_predictions_fold = np.vstack(cnn_predictions_fold, cnn_predictions)
+    # Salvar predições em texto
+    np.savetxt(f'predicoes/predicoes_real_fold{fold_no}.txt',
+               y_pred, fmt="%f", delimiter=';')
+    np.savetxt(f'predicoes/predicoes_svm_fold{fold_no}.txt',
+               svm_predictions, fmt="%f", delimiter=';')
+    np.savetxt(f'predicoes/predicoes_cnn_fold{fold_no}.txt',
+               cnn_predictions, fmt="%f", delimiter=';')
 
     # Acurácia para cada fusão
     resultado_soma_simples = soma_simples(
@@ -343,23 +337,6 @@ for train, test in kfold.split(images, labels):
     loss_per_fold.append(scores[0])
 
     fold_no += 1
-
-# Salvar predições em texto
-print("y_pred_fold:")
-for i in y_pred_fold:
-    print(i)
-
-print("svm_predictions_fold:")
-for i in svm_predictions_fold:
-    print(i)
-
-print("cnn_predictions_fold:")
-for i in cnn_predictions_fold:
-    print(i)
-
-np.savetxt('saida2/predicoes_real.txt', y_pred_fold, fmt="%f")
-np.savetxt('saida2/predicoes_svm.txt', svm_predictions_fold, fmt="%f")
-np.savetxt('saida2/predicoes_cnn.txt', cnn_predictions_fold, fmt="%f")
 
 
 # Salvar modelo SVM
