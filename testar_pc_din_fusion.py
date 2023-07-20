@@ -193,7 +193,7 @@ y_preds = []
 
 # Definição dos valores para treinamento
 k_fold = 5
-epochs = 2
+epochs = 50
 batch_size = 64
 
 # Para a CNN
@@ -433,5 +433,5 @@ model_json = model.to_json()
 with open("saida2/model.json", "w") as json_file:
     json_file.write(model_json)
 
-model.save_weights("saida/model.h5")
+model.save_weights("saida2/model.h5")
 print("Saved model to disk")
