@@ -312,7 +312,7 @@ for train, test in kfold.split(images, labels):
         vetor_resultados_maiores_valores.append(res)
 
     # Imprime os resultados
-    acc_aux = accuracy_score(y_pred, vetor_resultados_soma_simples)
+    acc_aux = accuracy_score(y_pred, resultado_soma_simples)
     acc_soma_simples.append(acc_aux)
     print("acc_soma_simples:", acc_aux)
 
