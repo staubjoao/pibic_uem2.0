@@ -259,7 +259,7 @@ for train, test in kfold.split(images, labels):
     for res in y_pred:
         y_preds.append(res)
 
-    y_pred_fold.append(y_pred)
+    y_pred_fold = np.append(y_pred_fold, y_pred)
 
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
@@ -269,7 +269,7 @@ for train, test in kfold.split(images, labels):
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict_proba(x_test_svm)
 
-    svm_predictions_fold.append(svm_predictions)
+    svm_predictions_fold = np.append(svm_predictions_fold, svm_predictions)
 
     svm_predictions_acc = svm_model.predict(x_test_svm)
     acc_svm = accuracy_score(y_test_svm, svm_predictions_acc)
@@ -286,7 +286,7 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     cnn_predictions = model.predict(x_test_cnn)
 
-    cnn_predictions_fold.append(cnn_predictions)
+    cnn_predictions_fold = np.append(cnn_predictions_fold, cnn_predictions)
 
     # Acurácia para cada fusão
     resultado_soma_simples = soma_simples(
