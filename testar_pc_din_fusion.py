@@ -363,7 +363,7 @@ nome_melhor_metodo = nomes_metodos[melhor_metodo]
 print("Melhor método", nome_melhor_metodo)
 resultado = []
 if melhor_metodo == 0:
-    resultado = acc_soma_simples[:]
+    resultado = vetor_resultados_soma_simples[:]
 elif melhor_metodo == 1:
     resultado = vetor_resultados_media_simples[:]
 elif melhor_metodo == 2:
