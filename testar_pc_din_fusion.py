@@ -8,21 +8,37 @@ import cv2
 import tensorflow as tf
 import matplotlib.pyplot as plt
 import itertools
+import pickle
 
 
-def votacao_majoritaria_ponderada(svm_preds, cnn_preds):
-    # Defina os pesos para cada modelo
-    peso_svm = 0.4
-    peso_cnn = 0.6
+def votacao(svm_preds, cnn_preds):
+    fused_predictions = []
+    # Obtém o número de classes do vetor de previsões do CNN
+    num_classes = len(cnn_predictions[0])
 
-    # Calcule as previsões combinadas por votação majoritária ponderada
-    preds_combinadas = (peso_svm * svm_preds + peso_cnn *
-                        cnn_preds) / (peso_svm + peso_cnn)
+    for svm_pred, cnn_pred in zip(svm_predictions, cnn_predictions):
+        # Contando os votos para cada classe
+        votes = np.zeros(num_classes, dtype=int)
 
-    # Obtenha as classes preditas usando o argmax
-    classes_preditas = np.argmax(preds_combinadas, axis=1)
+        # Incrementando o voto do SVM
+        svm_pred = int(svm_pred)
+        votes[svm_pred] += 1
 
-    return classes_preditas
+        # Incrementando os votos do CNN
+        max_class_index = np.argmax(cnn_pred)
+        votes[max_class_index] += 1
+
+        # Obtendo a classe com mais votos
+        fused_pred = np.argmax(votes)
+        fused_predictions.append(fused_pred)
+
+    return fused_predictions
+
+
+def soma_simples(svm_preds, cnn_preds):
+    preds_compinadas = svm_preds + cnn_preds
+
+    return np.argmax(preds_compinadas, axis=1)
 
 
 def media_simples(svm_preds, cnn_preds):
@@ -164,26 +180,31 @@ arq.close()
 
 histories = []
 scores_array = []
-acc_votacao_majoritaria = []
+acc_soma_simples = []
 acc_media_simples = []
 acc_media_ponderada = []
 acc_maiores_valores = []
-vetor_resultados_votacao_majoritaria = []
+vetor_resultados_soma_simples = []
 vetor_resultados_media_simples = []
 vetor_resultados_media_ponderada = []
 vetor_resultados_maiores_valores = []
 y_preds = []
 
+svm_predictions_fold = np.array([])
+cnn_predictions_fold = np.array([])
+y_pred_fold = np.array([])
+
 
 # Definição dos valores para treinamento
 k_fold = 5
-epochs = 50
+epochs = 2
 batch_size = 64
 
 # Para a CNN
 acc_per_fold = []
 loss_per_fold = []
 best_model, best_acc = None, 0.0
+best_model_svm, best_acc_svm = None, 0.0
 
 # Split dos folds
 kfold = KFold(n_splits=k_fold, shuffle=True)
@@ -238,6 +259,8 @@ for train, test in kfold.split(images, labels):
     for res in y_pred:
         y_preds.append(res)
 
+    y_pred_fold.append(y_pred)
+
     y_train_cnn = to_categorical(y_train_cnn, num_classes=len(classes))
     y_test_cnn = to_categorical(y_test_cnn, num_classes=len(classes))
 
@@ -245,6 +268,15 @@ for train, test in kfold.split(images, labels):
     svm_model = SVC(C=100, kernel='poly', gamma='scale', probability=True)
     svm_model.fit(x_train_svm, y_train_svm)
     svm_predictions = svm_model.predict_proba(x_test_svm)
+
+    svm_predictions_fold.append(svm_predictions)
+
+    svm_predictions_acc = svm_model.predict(x_test_svm)
+    acc_svm = accuracy_score(y_test_svm, svm_predictions_acc)
+
+    if acc_svm > best_acc_svm:
+        best_acc_svm = acc_svm
+        best_model_svm = svm_model
 
     # CNN
     history = model.fit(x_train_cnn, y_train_cnn,
@@ -254,8 +286,10 @@ for train, test in kfold.split(images, labels):
     scores = model.evaluate(x_test_cnn, y_test_cnn, verbose=0)
     cnn_predictions = model.predict(x_test_cnn)
 
+    cnn_predictions_fold.append(cnn_predictions)
+
     # Acurácia para cada fusão
-    resultado_votacao_majoritaria = votacao_majoritaria_ponderada(
+    resultado_soma_simples = soma_simples(
         svm_predictions, cnn_predictions)
     resultado_media_simples = media_simples(
         svm_predictions, cnn_predictions)
@@ -265,8 +299,8 @@ for train, test in kfold.split(images, labels):
         svm_predictions, cnn_predictions)
 
     # Adiciona o resultado no vetor para fazer a validação fora do for
-    for res in resultado_votacao_majoritaria:
-        vetor_resultados_votacao_majoritaria.append(res)
+    for res in resultado_soma_simples:
+        vetor_resultados_soma_simples.append(res)
 
     for res in resultado_media_simples:
         vetor_resultados_media_simples.append(res)
@@ -278,9 +312,9 @@ for train, test in kfold.split(images, labels):
         vetor_resultados_maiores_valores.append(res)
 
     # Imprime os resultados
-    acc_aux = accuracy_score(y_pred, resultado_votacao_majoritaria)
-    acc_votacao_majoritaria.append(acc_aux)
-    print("acc_votacao_majoritaria:", acc_aux)
+    acc_aux = accuracy_score(y_pred, vetor_resultados_soma_simples)
+    acc_soma_simples.append(acc_aux)
+    print("acc_soma_simples:", acc_aux)
 
     acc_aux = accuracy_score(y_pred, resultado_media_simples)
     acc_media_simples.append(acc_aux)
@@ -306,11 +340,33 @@ for train, test in kfold.split(images, labels):
 
     fold_no += 1
 
+# Salvar predições em texto
+print("y_pred_fold:")
+for i in y_pred_fold:
+    print(i)
+
+print("svm_predictions_fold:")
+for i in svm_predictions_fold:
+    print(i)
+
+print("cnn_predictions_fold:")
+for i in cnn_predictions_fold:
+    print(i)
+
+np.savetxt('saida/predicoes_real,txt', y_pred_fold, fmt="%f")
+np.savetxt('saida2/predicoes_svm.txt', svm_predictions_fold, fmt="%f")
+np.savetxt('saida2/predicoes_cnn.txt', cnn_predictions_fold, fmt="%f")
+
+
+# Salvar modelo SVM
+with open('saida2/modelo_svm.pkl', 'wb') as f:
+    pickle.dump(svm_model, f)
+
 # Imprime os resultados
 print("Fusão")
-lista_acuracia = [np.mean(acc_votacao_majoritaria), np.mean(acc_media_simples),
+lista_acuracia = [np.mean(acc_soma_simples), np.mean(acc_media_simples),
                   np.mean(acc_media_ponderada), np.mean(acc_maiores_valores)]
-nomes_metodos = ['Votação Majoritária', 'Média Simples',
+nomes_metodos = ['Soma Simples', 'Média Simples',
                  'Média Ponderada', 'Maiores Valores']
 
 # Acurácia média para cada fusão
@@ -326,7 +382,7 @@ nome_melhor_metodo = nomes_metodos[melhor_metodo]
 print("Melhor método", nome_melhor_metodo)
 resultado = []
 if melhor_metodo == 0:
-    resultado = vetor_resultados_votacao_majoritaria[:]
+    resultado = acc_soma_simples[:]
 elif melhor_metodo == 1:
     resultado = vetor_resultados_media_simples[:]
 elif melhor_metodo == 2:
