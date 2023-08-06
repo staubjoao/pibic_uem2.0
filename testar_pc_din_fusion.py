@@ -279,11 +279,11 @@ for train, test in kfold.split(images, labels):
     cnn_predictions = model.predict(x_test_cnn)
 
     # Salvar predições em texto
-    np.savetxt(f'predicoes/predicoes_real_fold{fold_no}.txt',
+    np.savetxt(f'predicoes_final/predicoes_real_fold{fold_no}.txt',
                y_pred, fmt="%f", delimiter=';')
-    np.savetxt(f'predicoes/predicoes_svm_fold{fold_no}.txt',
+    np.savetxt(f'predicoes_final/predicoes_svm_fold{fold_no}.txt',
                svm_predictions, fmt="%f", delimiter=';')
-    np.savetxt(f'predicoes/predicoes_cnn_fold{fold_no}.txt',
+    np.savetxt(f'predicoes_final/predicoes_cnn_fold{fold_no}.txt',
                cnn_predictions, fmt="%f", delimiter=';')
 
     # Acurácia para cada fusão
@@ -340,7 +340,7 @@ for train, test in kfold.split(images, labels):
 
 
 # Salvar modelo SVM
-with open('saida2/modelo_svm.pkl', 'wb') as f:
+with open('saida_final/modelo_svm.pkl', 'wb') as f:
     pickle.dump(svm_model, f)
 
 # Imprime os resultados
@@ -410,7 +410,7 @@ plt.xlabel("Época")
 plt.legend()
 
 # Salvar os gráficos em formato PNG
-plt.savefig("saida2/graficos.png")
+plt.savefig("saida_final/graficos.png")
 
 plt.figure(figsize=(10, 5))
 plt.subplot(1, 2, 1)
@@ -426,12 +426,12 @@ plt.xlabel('fold')
 plt.ylabel('Acurácia')
 
 plt.tight_layout()
-plt.savefig("saida2/boxplot.png")
+plt.savefig("saida_final/boxplot.png")
 
 # Salvar modelo
 model_json = model.to_json()
-with open("saida2/model.json", "w") as json_file:
+with open("saida_final/model.json", "w") as json_file:
     json_file.write(model_json)
 
-model.save_weights("saida2/model.h5")
+model.save_weights("saida_final/model.h5")
 print("Saved model to disk")
